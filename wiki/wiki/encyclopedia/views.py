@@ -3,6 +3,7 @@ from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.contrib import messages
 
 from . import util
 import markdown2
@@ -10,7 +11,7 @@ import random
 
 class Entry_Form(forms.Form):
     title = forms.CharField(label="Title", max_length=20)
-    entry = forms.CharField(label="Your Entry", max_length=200)
+    entry = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
 
 
 def index(request):
@@ -37,7 +38,24 @@ def random_entry(request):
         return redirect('index')
     
 def create_entry(request):
-    return render(request, "encyclopedia/create.html")
+    if request.method == "POST":
+        form = Entry_Form(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            content = form.cleaned_data["entry"]
+            
+            if util.get_entry(title):
+                messages.error(request, f"An entry with the title '{title}' already exists.")
+                return render(request, 'encyclopedia/create.html', {'form': form})
+            util.save_entry(title, content)
+            return redirect('entry', title=title)
+        else:
+            return render(request, "encyclopedia/create.html", {
+                "form" : form
+            })
+    return render(request, "encyclopedia/create.html", {
+        "form" : Entry_Form()
+    })
 
 def edit_entry(request, title):
     pass

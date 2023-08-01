@@ -7,10 +7,20 @@
 {% block body %}
     <h1>Create Your Entry</h1>
 
-    <form>
-        {% csrf_token %}
+    {% if messages %}
+    <div class="error">
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 
-        
+    <form action="{% url 'create' %}" method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Save">
     </form>
 
 {% endblock %}
