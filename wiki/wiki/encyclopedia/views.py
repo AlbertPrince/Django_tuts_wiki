@@ -59,4 +59,7 @@ def create_entry(request):
 
 def edit_entry(request, title):
     pass
+
+def search(request):
+    pass
     

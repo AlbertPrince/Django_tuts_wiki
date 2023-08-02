@@ -5,8 +5,11 @@
 {% endblock %}
 
 {% block body %}
-    {{ entry }}
+    <h1>Edit Entry</h1>
 
-    <a href="{% url 'edit' title %}">Edit Entry</a>
-    
+    <form action="{% url 'edit' entry %}" method="POST">
+        {% csrf_token %}
+
+    </form>
+
 {% endblock %}
