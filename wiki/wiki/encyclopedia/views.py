@@ -12,6 +12,9 @@ import random
 class Entry_Form(forms.Form):
     title = forms.CharField(label="Title", max_length=20)
     entry = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
+    
+class Edit_Form(forms.Form):
+    entry = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
 
 
 def index(request):
@@ -58,7 +61,31 @@ def create_entry(request):
     })
 
 def edit_entry(request, title):
-    pass
+    # form = Entry_Form()
+    # if request.method == "POST":
+    #     return
+    # else:
+    #     return render(request, "encyclopedia/edit.html",{
+    #         "form" : form
+    #     })
+    # return render(request, "encyclopedia/edit.html", {
+    #     "title" : title
+    # })
+    existing_content = util.get_entry(title)
+    if existing_content is None:
+        return render(request, 'encyclopedia/entry_not_found.html')  # You can create this template
+
+    if request.method == 'POST':
+        form = Edit_Form(request.POST)
+        if form.is_valid():
+            new_content = form.cleaned_data['content']
+            util.save_entry(title, new_content)
+            return redirect('entry', title=title)
+    else:
+        form = Edit_Form(initial={'content': existing_content})
+    
+    return render(request, 'encyclopedia/edit_entry.html', {'form': form, 'title': title})
+
 
 def search(request):
     pass
