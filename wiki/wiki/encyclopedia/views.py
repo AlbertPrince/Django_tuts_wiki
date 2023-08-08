@@ -14,7 +14,10 @@ class Entry_Form(forms.Form):
     entry = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
     
 class Edit_Form(forms.Form):
-    entry = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
+    content = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
+
+class Search_Form(forms.Form):
+    search = forms.CharField()
 
 
 def index(request):
@@ -61,32 +64,49 @@ def create_entry(request):
     })
 
 def edit_entry(request, title):
-    # form = Entry_Form()
-    # if request.method == "POST":
-    #     return
-    # else:
-    #     return render(request, "encyclopedia/edit.html",{
-    #         "form" : form
-    #     })
-    # return render(request, "encyclopedia/edit.html", {
-    #     "title" : title
-    # })
-    existing_content = util.get_entry(title)
-    if existing_content is None:
-        return render(request, 'encyclopedia/entry_not_found.html')  # You can create this template
-
-    if request.method == 'POST':
+    if request.method == "POST":
         form = Edit_Form(request.POST)
         if form.is_valid():
-            new_content = form.cleaned_data['content']
-            util.save_entry(title, new_content)
-            return redirect('entry', title=title)
-    else:
-        form = Edit_Form(initial={'content': existing_content})
+            content = form.cleaned_data["content"]
+            util.save_entry(title, content)
+            return redirect(entry, title=title)
+        else:
+            return render(request, "encyclopedia/edit.html", {
+        "form" : form
+    }) 
+    return render(request, "encyclopedia/edit.html", {
+        "title" : title,
+        "form" : Edit_Form()
+    })
+  
+    # existing_content = util.get_entry(title)
+    # if existing_content is None:
+    #     return render(request, 'encyclopedia/error.html')
+
+    # if request.method == 'POST':
+    #     form = Edit_Form(request.POST)
+    #     if form.is_valid():
+    #         new_content = form.cleaned_data['content']
+    #         util.save_entry(title, new_content)
+    #         return redirect('entry', title=title)
+    # else:
+    #     form = Edit_Form(initial={'content': existing_content})
     
-    return render(request, 'encyclopedia/edit_entry.html', {'form': form, 'title': title})
+    # return render(request, 'encyclopedia/edit.html', {'form': form, 'title': title})
 
 
 def search(request):
-    pass
-    
+    entries = util.list_entries
+    search_results = []
+    if request.method == "POST":
+        title = request.method == 'POST'
+        
+        for entry in entries:
+            if entry == title:
+                return redirect('entry', title=title)
+            elif title in entry:
+                search_results.append(entry)
+                return render(request, 'encyclopedia/search.html', {'search_results' : search_results})
+            
+    return render(request, 'encyclopedia/search.html')
+            
