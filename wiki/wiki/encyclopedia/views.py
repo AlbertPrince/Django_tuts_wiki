@@ -16,9 +16,6 @@ class Entry_Form(forms.Form):
 class Edit_Form(forms.Form):
     content = forms.CharField(widget=forms.Textarea, label="Markdown Content", max_length=200)
 
-class Search_Form(forms.Form):
-    search = forms.CharField()
-
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
@@ -96,17 +93,15 @@ def edit_entry(request, title):
 
 
 def search(request):
-    entries = util.list_entries
-    search_results = []
-    if request.method == "POST":
-        title = request.method == 'POST'
-        
-        for entry in entries:
-            if entry == title:
-                return redirect('entry', title=title)
-            elif title in entry:
-                search_results.append(entry)
-                return render(request, 'encyclopedia/search.html', {'search_results' : search_results})
-            
+    if 'q' in request.GET:
+        query = request.GET['q']
+        if util.get_entry(query):
+            return redirect('entry', title=query)
+        else:
+            matched_entries = [entry for entry in util.list_entries() if query.lower() in entry.lower()]
+            return render(request, 'encyclopedia/search.html', {
+                "matched_entries": matched_entries,
+                "query": query
+            })
     return render(request, 'encyclopedia/search.html')
             
